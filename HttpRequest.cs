@@ -6,11 +6,11 @@ namespace Fardin
     public class HttpRequest
     {
         public string Method { get; internal set; }
-        public string Url { get; set; }
-        public string HttpVersion { get; set; }
-        public HeaderCollection Headers { get; set; } = new HeaderCollection();
-        public byte[] Content { get; set; }
-        public HttpRequestPartCollection FormDatas { get; set; }
+        public string Url { get; internal set; }
+        public string HttpVersion { get; internal set; }
+        public HeaderCollection Headers { get; internal set; } = new HeaderCollection();
+        public byte[] Content { get; internal set; }
+        public HttpRequestPartCollection FormDatas { get; internal set; }
 
         #region Dependent Properties
         public bool IsMultipartRequest
