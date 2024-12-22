@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Fardin
 {
@@ -47,11 +49,25 @@ namespace Fardin
                     request.Items["R_FORMS_DATA"] = (HttpRequestPartCollection)parts;
                 }
                 else request.Items["R_CONTENT"] = buffer.Skip(bodyStartIndex).ToArray();
+			}
+
+            var cookies = new CookieCollection();
+
+            foreach(var header in headers.Where(i => string.Equals("cookie", i.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                string cookie = header.Value;
+                string[] cookiesPart = cookie.Split(";");
+                foreach(var theCookie in cookiesPart)
+                {
+                    string[] cookiePart = theCookie.Trim(' ').Split('=');
+                    cookies.AddCookie(new HttpCookie(HttpUtility.UrlDecode(cookiePart[0]), HttpUtility.UrlDecode(cookiePart[1])));
+                }
             }
 
-            request.Items["R_HEADERS"] = headers;
+			request.Items["R_HEADERS"] = headers;
+			request.Items["R_COOKIES"] = cookies;
 
-            return request;
+			return request;
         }
 
         private static List<HttpRequestPart> SplitByBoundary(byte[] body, byte[] boundary)

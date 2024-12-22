@@ -13,15 +13,15 @@ namespace Fardin
 		private string baseDirectory;
 
 		public HttpContext(string baseDirecotry)
-        {
+		{
 			this.baseDirectory = baseDirecotry;
 		}
-		
+
 		public HttpRequest Request { get; internal set; }
 		public HttpResponse Response { get; set; } = new HttpResponse();
 		public Socket Client { get; internal set; }
 
-        public void Close()
+		public void Close()
 		{
 			byte[] oldBytes = CompressResponse(ReadAllBytes(Response.ResponseStream));
 
@@ -35,6 +35,9 @@ namespace Fardin
 			else sb.AppendLine("content-type: text/html; charset=UTF-8");
 			foreach (var header in Response.Headers)
 				sb.AppendLine($"{header.Name}: {string.Join("; ", header.Values)}");
+			foreach (var cookie in Response.Cookies)
+					sb.AppendLine("set-cookie: " + cookie);
+				if (Response.Cookies.Any())
 			sb.AppendLine($"server: Fardin/{version}");
 			sb.AppendLine("content-Length: " + oldBytes.Length);
 			sb.AppendLine();

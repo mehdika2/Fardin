@@ -81,14 +81,27 @@ namespace Fardin
                     byte[] buffer = new byte[BufferSize];
                     int count;
                     while (true)
-                    {
-                        if (totalBytesReceived.Count == 0)
-                            if (!client.Poll(1000, SelectMode.SelectRead))
-                                break;
-                        count = client.Receive(buffer);
+					{
+						try
+						{
+                            if (totalBytesReceived.Count == 0)
+                            {
+                                if (!client.Connected)
+                                    return null;
 
-                        // check is https or not
-                        if (totalBytesReceived.Count == 0 && count >= 5)
+								if (!client.Poll(1000, SelectMode.SelectRead))
+                                    break;
+                            }
+
+							count = client.Receive(buffer);
+						}
+						catch (SocketException)
+						{
+                            break;
+						}
+
+						// check is https or not
+						if (totalBytesReceived.Count == 0 && count >= 5)
                             // Check if it matches the SSL/TLS handshake format
                             if (buffer[0] == 0x16 && // Handshake record
                                 (buffer[1] == 0x03 && // SSL/TLS major version

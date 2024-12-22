@@ -11,6 +11,7 @@ namespace Fardin
 		public Uri Uri { get { return Items["R_URI"] as Uri; } }
 		public string HttpVersion { get { return Items["R_HTTP_VERSION"].ToString(); } }
 		public HeaderCollection Headers { get { return Items["R_HEADERS"] as HeaderCollection; } }
+		public CookieCollection Cookies { get { return Items["R_COOKIES"] as CookieCollection; } }
 		public byte[] Content
 		{
 			get
