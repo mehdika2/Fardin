@@ -3,28 +3,39 @@ using System.Net.Sockets;
 
 namespace Fardin
 {
-    public class HttpRequest
-    {
-        public string Method { get; internal set; }
-        public string Url { get; internal set; }
-        public string HttpVersion { get; internal set; }
-        public HeaderCollection Headers { get; internal set; } = new HeaderCollection();
-        public byte[] Content { get; internal set; }
-        public HttpRequestPartCollection FormDatas { get; internal set; }
+	public class HttpRequest
+	{
+		public Dictionary<string, object> Items = new Dictionary<string, object>();
 
-        #region Dependent Properties
-        public bool IsMultipartRequest
-        {
-            get
-            {
-                return Headers.GetValue("Content-Type")?.StartsWith("multipart/form-data") ?? false;
-            }
-        }
-        #endregion
+		public string Method { get { return Items["R_HTTP_METHOD"].ToString(); } }
+		public Uri Uri { get { return Items["R_URI"] as Uri; } }
+		public string HttpVersion { get { return Items["R_HTTP_VERSION"].ToString(); } }
+		public HeaderCollection Headers { get { return Items["R_HEADERS"] as HeaderCollection; } }
+		public byte[] Content
+		{
+			get
+			{
+				if (Method == "POST" || Method == "PUT" || Method == "PATCH")
+					return Items["R_CONTENT"] as byte[];
+				return null;
+			}
+		}
+		public HttpRequestPartCollection FormsData { get { return Items["R_FORMS_DATA"] as HttpRequestPartCollection; } }
+		public bool IsMultipartRequest { get { return Headers.GetValue("Content-Type")?.StartsWith("multipart/form-data") ?? false; } }
 
-        public override string ToString()
-        {
-            return Method + " " + Url;
-        }
-    }
+		public object this[string key]
+		{
+			get
+			{
+				if (string.IsNullOrWhiteSpace(key) || !Items.ContainsKey(key))
+					throw new KeyNotFoundException($"Key '{key}' not found.");
+				return Items[key];
+			}
+		}
+
+		public override string ToString()
+		{
+			return Method + " " + Uri.AbsolutePath;
+		}
+	}
 }

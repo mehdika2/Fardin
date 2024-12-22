@@ -10,12 +10,18 @@ namespace Fardin
 	public class HttpContext : IDisposable
 	{
 		const string version = "1.1";
+		private string baseDirectory;
 
+		public HttpContext(string baseDirecotry)
+        {
+			this.baseDirectory = baseDirecotry;
+		}
+		
 		public HttpRequest Request { get; internal set; }
 		public HttpResponse Response { get; set; } = new HttpResponse();
 		public Socket Client { get; internal set; }
 
-		public void Close()
+        public void Close()
 		{
 			byte[] oldBytes = CompressResponse(ReadAllBytes(Response.ResponseStream));
 
@@ -23,8 +29,8 @@ namespace Fardin
 			sb.AppendLine($"{Response.HttpVersion} {Response.StatusCode}{(Response.StatusText != string.Empty ? " " + Response.StatusText : "")}");
 			if (Response.Headers.Any(i => i.Name.ToLower() == "content-type") && Response.Headers["content-type"] == "text/css")
 			{
-                FileInfo fileInfo = new FileInfo(Request.Url.Trim('/'));
-                sb.AppendLine($"etag: {fileInfo.Length}-{fileInfo.LastWriteTimeUtc.Ticks}");
+				FileInfo fileInfo = new FileInfo(Path.Combine(baseDirectory, Request.Uri.AbsolutePath.Trim('/')));
+				sb.AppendLine($"etag: {fileInfo.Length}-{fileInfo.LastWriteTimeUtc.Ticks}");
 			}
 			else sb.AppendLine("content-type: text/html; charset=UTF-8");
 			foreach (var header in Response.Headers)

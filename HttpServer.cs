@@ -17,14 +17,20 @@ namespace Fardin
 
         public int Backlog { get; set; } = 5;
         public bool IsTlsSecure {  get { return _certificate != null; } }
+		public string BaseDirectory { get; set; }
 
-        Socket _server;
+		Socket _server;
         X509Certificate2 _certificate;
         bool _started = false;
+        string _address;
+        int _port;
+
         public HttpServer(IPAddress address, int port)
         {
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server.Bind(new IPEndPoint(address, port));
+            _address = address.ToString();
+            _port = port;
         }
 
         public HttpServer(IPAddress address, int port, string certFile, string certPassword)
@@ -32,9 +38,11 @@ namespace Fardin
             _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server.Bind(new IPEndPoint(address, port));
             _certificate = new X509Certificate2(certFile, certPassword);
-        }
+            _address = address.ToString();
+            _port = port;
+		}
 
-        public void Start()
+		public void Start()
         {
             _server.Listen(Backlog);
             _started = true;
@@ -108,11 +116,20 @@ namespace Fardin
                         continue;
                     }
 
-                    HttpContext context = new HttpContext();
-                    context.Request = HttpParser.Parse(totalBytesReceived.ToArray());
-                    context.Client = client;
+                    HttpContext context = new HttpContext(BaseDirectory);
+					context.Request = HttpParser.Parse(totalBytesReceived.ToArray());
 
-                    return context;
+					var host = context.Request.Headers["Host"];
+					host = host ?? context.Request.Headers["host"];
+					context.Request.Items["R_URI"] = new Uri((IsTlsSecure ? "https" : "http") + $"://{host ?? (_address + ":" + _port)}" + context.Request.Items["R_PATH"].ToString());
+
+					IPEndPoint clientRemoteEndPoint = (IPEndPoint)client.RemoteEndPoint;
+					context.Request.Items["R_IP_ADDRESS"] = clientRemoteEndPoint.Address.ToString();
+					context.Request.Items["R_IP_PORT"] = clientRemoteEndPoint.Port;
+
+					context.Client = client;
+
+					return context;
                 }
                 else
                 {
@@ -174,9 +191,15 @@ namespace Fardin
                         return null;
                     }
 
-                    HttpContext context = new HttpContext();
+                    HttpContext context = new HttpContext(BaseDirectory);
                     context.Request = HttpParser.Parse(totalBytesReceived.ToArray());
-                    context.Client = client;
+
+                    var host = context.Request.Headers["Host"];
+                    host = host ?? context.Request.Headers["host"];
+					context.Request.Items["R_URI"] = new Uri(IsTlsSecure ? "https" : "http") + $"://{host ?? (_address + ":" + _port)}" + context.Request.Items["R_PATH"].ToString();
+					context.Request.Items["R_ADDRESS"] = (client.RemoteEndPoint as IPEndPoint).Address.ToString();
+
+					context.Client = client;
                     context.Response.NetowrkStream = stream;
                     context.Response.SecureStream = sslStream;
 

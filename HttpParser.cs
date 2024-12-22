@@ -22,33 +22,34 @@ namespace Fardin
             var requestLineParts = requestLines[0].Split(' ');
             if (requestLineParts.Length >= 3)
             {
-                request.Method = requestLineParts[0];
-                request.Url = requestLineParts[1];
-                request.HttpVersion = requestLineParts[2];
+                request.Items["R_HTTP_METHOD"] = requestLineParts[0];
+                request.Items["R_PATH"] = requestLineParts[1];
+                request.Items["R_HTTP_VERSION"] = requestLineParts[2];
             }
+
+            var headers = new HeaderCollection();
 
             int i = 1;
             for (; i < requestLines.Length && requestLines[i] != ""; i++)
-                request.Headers.Add(Header.Parse(requestLines[i]));
+				headers.Add(Header.Parse(requestLines[i]));
 
-            if (request.Method == "POST" || request.Method == "PUT")
+            if (request.Method == "POST" || request.Method == "PUT" || request.Method == "PATCH")
             {
                 var bodyStartIndex = requestString.IndexOf("\r\n\r\n") + 4;
-                if (request.Headers.GetValue("Content-Type")?.StartsWith("multipart/form-data") ?? false)
+                if (headers.GetValue("Content-Type")?.StartsWith("multipart/form-data") ?? false)
                 {
-                    request.Content = buffer.Skip(bodyStartIndex).ToArray();
+                    request.Items["R_CONTENT"] = buffer.Skip(bodyStartIndex).ToArray();
 
-                    var boundary = request.Headers.GetValue("Content-Type", 1).Split('=')[1];
+                    var boundary = headers.GetValue("Content-Type", 1).Split('=')[1];
                     var boundaryBytes = Encoding.ASCII.GetBytes("--" + boundary);
                     var parts = SplitByBoundary(request.Content, boundaryBytes);
 
-                    request.FormDatas = (HttpRequestPartCollection)parts;
+                    request.Items["R_FORMS_DATA"] = (HttpRequestPartCollection)parts;
                 }
-                else
-                {
-                    request.Content = buffer.Skip(bodyStartIndex).ToArray();
-                }
+                else request.Items["R_CONTENT"] = buffer.Skip(bodyStartIndex).ToArray();
             }
+
+            request.Items["R_HEADERS"] = headers;
 
             return request;
         }
