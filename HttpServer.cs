@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Web;
 
 namespace Fardin
 {
@@ -140,6 +142,8 @@ namespace Fardin
 					context.Request.Items["R_IP_ADDRESS"] = clientRemoteEndPoint.Address.ToString();
 					context.Request.Items["R_IP_PORT"] = clientRemoteEndPoint.Port;
 
+                    SetUrlParameters(context.Request);
+
 					context.Client = client;
 
 					return context;
@@ -212,6 +216,8 @@ namespace Fardin
 					context.Request.Items["R_URI"] = new Uri(IsTlsSecure ? "https" : "http") + $"://{host ?? (_address + ":" + _port)}" + context.Request.Items["R_PATH"].ToString();
 					context.Request.Items["R_ADDRESS"] = (client.RemoteEndPoint as IPEndPoint).Address.ToString();
 
+                    SetUrlParameters(context.Request);
+
 					context.Client = client;
                     context.Response.NetowrkStream = stream;
                     context.Response.SecureStream = sslStream;
@@ -219,6 +225,19 @@ namespace Fardin
                     return context;
                 }
             }
+        }
+
+        private void SetUrlParameters(HttpRequest request)
+        {
+            var uri = request.Items["R_URI"] as Uri;
+            string[] urlSplited = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+            NameValueCollection parameters = new NameValueCollection();
+			foreach (var part in urlSplited)
+            {
+                string[] parameter = part.Split('=');
+                parameters.Add(parameter[0], parameter[1]);
+			}
+			request.Items["R_URL_PARAMETERS"] = parameters;
         }
     }
 }

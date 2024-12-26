@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using System.Net.Sockets;
+using System.Xml;
+using System.Collections.Specialized;
 
 namespace Fardin
 {
@@ -16,8 +18,26 @@ namespace Fardin
 		{
 			get
 			{
-				if (Method == "POST" || Method == "PUT" || Method == "PATCH")
+				if (Items.ContainsKey("R_CONTENT"))
 					return Items["R_CONTENT"] as byte[];
+				return null;
+			}
+		}
+		public NameValueCollection RequestParameters
+		{
+			get
+			{
+				if (Items.ContainsKey("R_PARAMETERS"))
+					return Items["R_PARAMETERS"] as NameValueCollection;
+				return null;
+			}
+		}
+		public NameValueCollection UrlParameters
+		{
+			get
+			{
+				if (Items.ContainsKey("R_URL_PARAMETERS"))
+					return Items["R_URL_PARAMETERS"] as NameValueCollection;
 				return null;
 			}
 		}
