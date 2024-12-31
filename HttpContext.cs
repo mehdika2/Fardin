@@ -36,13 +36,11 @@ namespace Fardin
 			foreach (var header in Response.Headers)
 				sb.AppendLine($"{header.Name}: {string.Join("; ", header.Values)}");
 			foreach (var cookie in Response.Cookies)
-					sb.AppendLine("set-cookie: " + cookie);
-				if (Response.Cookies.Any())
+				sb.AppendLine("set-cookie: " + cookie);
 			sb.AppendLine($"server: Fardin/{version}");
 			sb.AppendLine("content-Length: " + oldBytes.Length);
 			sb.AppendLine();
 			byte[] newBytes = Encoding.UTF8.GetBytes(sb.ToString());
-
 
 			if (Response.SecureStream == null)
 			{
