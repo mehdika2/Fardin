@@ -136,7 +136,7 @@ namespace Fardin
 
 					var host = context.Request.Headers["Host"];
 					host = host ?? context.Request.Headers["host"];
-					context.Request.Items["R_URI"] = new Uri((IsTlsSecure ? "https" : "http") + $"://{host ?? (_address + ":" + _port)}" + context.Request.Items["R_PATH"].ToString());
+					context.Request.Items["R_URI"] = new Uri($"http://{host ?? (_address + ":" + _port)}" + context.Request.Items["R_PATH"].ToString());
 
 					IPEndPoint clientRemoteEndPoint = (IPEndPoint)client.RemoteEndPoint;
 					context.Request.Items["R_IP_ADDRESS"] = clientRemoteEndPoint.Address.ToString();
@@ -213,10 +213,13 @@ namespace Fardin
 
                     var host = context.Request.Headers["Host"];
                     host = host ?? context.Request.Headers["host"];
-					context.Request.Items["R_URI"] = new Uri(IsTlsSecure ? "https" : "http") + $"://{host ?? (_address + ":" + _port)}" + context.Request.Items["R_PATH"].ToString();
-					context.Request.Items["R_ADDRESS"] = (client.RemoteEndPoint as IPEndPoint).Address.ToString();
+					context.Request.Items["R_URI"] = new Uri($"https://{host ?? (_address + ":" + _port)}" + context.Request.Items["R_PATH"].ToString());
 
-                    SetUrlParameters(context.Request);
+					IPEndPoint clientRemoteEndPoint = (IPEndPoint)client.RemoteEndPoint;
+					context.Request.Items["R_IP_ADDRESS"] = clientRemoteEndPoint.Address.ToString();
+					context.Request.Items["R_IP_PORT"] = clientRemoteEndPoint.Port;
+
+					SetUrlParameters(context.Request);
 
 					context.Client = client;
                     context.Response.NetowrkStream = stream;

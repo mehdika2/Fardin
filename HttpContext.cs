@@ -23,7 +23,8 @@ namespace Fardin
 
 		public void Close()
 		{
-			byte[] oldBytes = CompressResponse(ReadAllBytes(Response.ResponseStream));
+			byte[] oldBytes = CompressResponse(Response.ResponseStream.ToArray());
+			//byte[] oldBytes = Response.ResponseStream.ToArray();
 
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine($"{Response.HttpVersion} {Response.StatusCode}{(Response.StatusText != string.Empty ? " " + Response.StatusText : "")}");
@@ -32,7 +33,7 @@ namespace Fardin
 				FileInfo fileInfo = new FileInfo(Path.Combine(baseDirectory, Request.Uri.AbsolutePath.Trim('/')));
 				sb.AppendLine($"etag: {fileInfo.Length}-{fileInfo.LastWriteTimeUtc.Ticks}");
 			}
-			else sb.AppendLine("content-type: text/html; charset=UTF-8");
+			else sb.AppendLine("content-type: text/html; charset=utf-8");
 			foreach (var header in Response.Headers)
 				sb.AppendLine($"{header.Name}: {string.Join("; ", header.Values)}");
 			foreach (var cookie in Response.Cookies)
