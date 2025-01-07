@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Fardin
@@ -24,23 +25,35 @@ namespace Fardin
 		public void Close()
 		{
 			byte[] oldBytes = CompressResponse(Response.ResponseStream.ToArray());
-			//byte[] oldBytes = Response.ResponseStream.ToArray();
 
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine($"{Response.HttpVersion} {Response.StatusCode}{(Response.StatusText != string.Empty ? " " + Response.StatusText : "")}");
+
+			// add response headers
+			foreach (var header in Response.Headers)
+				sb.AppendLine($"{header.Name}: {string.Join("; ", header.Values)}");
+
+			// set content type
 			if (Response.Headers.Any(i => i.Name.ToLower() == "content-type") && Response.Headers["content-type"] == "text/css")
 			{
 				FileInfo fileInfo = new FileInfo(Path.Combine(baseDirectory, Request.Uri.AbsolutePath.Trim('/')));
 				sb.AppendLine($"etag: {fileInfo.Length}-{fileInfo.LastWriteTimeUtc.Ticks}");
 			}
-			else sb.AppendLine("content-type: text/html; charset=utf-8");
-			foreach (var header in Response.Headers)
-				sb.AppendLine($"{header.Name}: {string.Join("; ", header.Values)}");
+			else if(!Regex.Match(sb.ToString(), "^content-type", RegexOptions.IgnoreCase | RegexOptions.Multiline).Success)
+				sb.AppendLine("content-type: text/html; charset=utf-8");
+
+			// add cokies
 			foreach (var cookie in Response.Cookies)
 				sb.AppendLine("set-cookie: " + cookie);
+
+			// server version header
 			sb.AppendLine($"server: Fardin/{version}");
+
+			// content length
 			sb.AppendLine("content-Length: " + oldBytes.Length);
+
 			sb.AppendLine();
+
 			byte[] newBytes = Encoding.UTF8.GetBytes(sb.ToString());
 
 			if (Response.SecureStream == null)
