@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Fardin
 {
@@ -55,16 +56,15 @@ namespace Fardin
 			sb.AppendLine();
 
 			byte[] newBytes = Encoding.UTF8.GetBytes(sb.ToString());
+			byte[] mergedArray = new byte[newBytes.Length + oldBytes.Length];
+			Array.Copy(newBytes, 0, mergedArray, 0, newBytes.Length);
+			Array.Copy(oldBytes, 0, mergedArray, newBytes.Length, oldBytes.Length);
 
 			if (Response.SecureStream == null)
-			{
-				Client.Send(newBytes);
-				Client.Send(oldBytes);
-			}
+				Client.Send(mergedArray);
 			else
 			{
-				Response.SecureStream.Write(newBytes);
-				Response.SecureStream.Write(oldBytes);
+				Response.SecureStream.Write(mergedArray);
 				Response.SecureStream.Close();
 				Response.NetowrkStream.Close();
 			}

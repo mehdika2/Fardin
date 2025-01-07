@@ -153,10 +153,10 @@ namespace Fardin
                     var stream = new NetworkStream(client, true);
                     SslStream sslStream = new SslStream(stream, false);
                     try
-                    {
-                        sslStream.AuthenticateAsServer(_certificate, false, System.Security.Authentication.SslProtocols.Tls12, true);
+					{
+						sslStream.AuthenticateAsServer(_certificate, false, System.Security.Authentication.SslProtocols.Tls13, true);
 
-                        if (!sslStream.IsAuthenticated)
+						if (!sslStream.IsAuthenticated)
                         {
                             sslStream.Close();
                             stream.Close();
@@ -182,8 +182,8 @@ namespace Fardin
                             }
                             else break;
                         }
-                    }
-                    catch (IOException ex)
+					}
+					catch (IOException ex)
                     {
                         Console.WriteLine($"Client disconnected or timeout occurred: {ex.Message}");
                         sslStream.Close();
