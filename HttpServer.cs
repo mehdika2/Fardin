@@ -237,7 +237,7 @@ namespace Fardin
             NameValueCollection parameters = new NameValueCollection();
 			foreach (var part in urlSplited)
             {
-                string[] parameter = part.Split('=');
+                string[] parameter = Uri.UnescapeDataString(part).Split('=');
                 parameters.Add(parameter[0], parameter[1]);
 			}
 			request.Items["R_URL_PARAMETERS"] = parameters;
