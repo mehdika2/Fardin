@@ -17,17 +17,7 @@ namespace Fardin
 		public bool Secure { get; set; }
 		public SameSiteMode SameSite { get; set; }
 
-		public HttpCookie(string name, string value)
-		{
-			Name = name;
-			Value = value;
-			Expires = null;
-			Path = "/";
-			HttpOnly = true;
-			Secure = false;
-		}
-
-		public HttpCookie(string name, string value, DateTime expires)
+		public HttpCookie(string name, string value, DateTime? expires = null)
 		{
 			Name = name;
 			Value = value;
@@ -37,7 +27,7 @@ namespace Fardin
 			Secure = false;
 		}
 
-		public HttpCookie(string name, string value, DateTime expires, string path, SameSiteMode sameSite, bool httpOnly, bool secure)
+		public HttpCookie(string name, string value, string path, SameSiteMode sameSite, bool httpOnly, bool secure, DateTime? expires = null)
 		{
 			Name = name;
 			Value = value;
@@ -50,7 +40,9 @@ namespace Fardin
 
 		public override string ToString()
 		{
-			return $"{HttpUtility.UrlEncode(Name)}={HttpUtility.UrlEncode(Value)};{(Expires == null ? " " : " Expires=" + Expires?.ToString("R") + "; ")}Path={Path};{(HttpOnly ? " HttpOnly;" : "")}{(Secure ? " Secure;" : "")}{(SameSite.Equals(default(SameSiteMode)) ? "" : " SameSite=" + SameSite)}".TrimEnd(';');
+			return $"{HttpUtility.UrlEncode(Name)}={HttpUtility.UrlEncode(Value)};{(Expires == null ? " " : " Expires=" + Expires?.ToString("R") + "; ")}" +
+				$"Path={Path};{(HttpOnly ? " HttpOnly;" : "")}{(Secure ? " Secure;" : "")}" +
+				$"{(SameSite.Equals(default(SameSiteMode)) ? "" : " SameSite=" + SameSite)}".TrimEnd(';');
 		}
 	}
 
