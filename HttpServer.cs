@@ -53,8 +53,9 @@ namespace Fardin
 
 		public void Stop()
 		{
-			_server.Shutdown(SocketShutdown.Both);
 			_started = false;
+			_server.Close();
+			//_server.Shutdown(SocketShutdown.Both);
 		}
 
 		public HttpContext GetContext()
@@ -70,10 +71,14 @@ namespace Fardin
 					Socket client = _server.Accept();
 					//client.ReceiveTimeout = ReceiveTimeoutMillis;
 
-					var context = HandleClient(client);
-					if (context == null)
-						continue;
-					return context;
+					try
+					{
+						var context = HandleClient(client);
+						if (context == null)
+							continue;
+						return context;
+					}
+					catch { }
 				}
 			}
 			catch
