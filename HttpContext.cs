@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Fardin
 {
@@ -16,7 +11,7 @@ namespace Fardin
 
 		public HttpContext(string baseDirecotry)
 		{
-			this.baseDirectory = baseDirecotry;
+			baseDirectory = baseDirecotry;
 		}
 
 		public HttpRequest Request { get; internal set; }
